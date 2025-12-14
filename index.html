@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Zahlen hören – Bild auswählen (1–20)</title>
+  <style>
+    :root{
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:#eef2ff;
+      -webkit-tap-highlight-color: transparent;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right)
+               env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    .app{
+      width:100%;
+      max-width: 720px;
+      background:#fff;
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.12);
+      padding: clamp(14px, 3.5vw, 22px);
+      margin: 10px;
+    }
+    h1{
+      margin: 0 0 .25rem;
+      text-align:center;
+      font-size: clamp(1.25rem, 4.2vw, 1.6rem);
+      line-height:1.15;
+    }
+    .subtitle{
+      margin:0 0 .8rem;
+      text-align:center;
+      color:#4b5563;
+      font-size: clamp(.9rem, 3.2vw, 1rem);
+    }
+    .hidden{ display:none; }
+
+    .card{
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    label{
+      display:block;
+      margin:.55rem 0 .25rem;
+      font-weight:800;
+      color:#374151;
+      font-size:.95rem;
+    }
+    select{
+      width:100%;
+      padding:.7rem .75rem;
+      border-radius: 14px;
+      border:2px solid #d1d5db;
+      font-weight:800;
+      font-size: 1rem;
+      outline:none;
+      background:#fff;
+    }
+    select:focus{
+      border-color:#2563eb;
+      box-shadow: 0 0 0 4px rgba(37,99,235,.15);
+    }
+
+    .primary-btn{
+      width:100%;
+      margin-top: 12px;
+      padding: .85rem 1rem;
+      border-radius: 999px;
+      border: none;
+      background:#2563eb;
+      color:#fff;
+      font-weight:900;
+      font-size: 1.05rem;
+      cursor:pointer;
+    }
+    .primary-btn:hover{ background:#1d4ed8; }
+    .primary-btn:disabled{ background:#9ca3af; cursor:not-allowed; }
+
+    .secondary-btn{
+      width:100%;
+      margin-top: 10px;
+      padding: .8rem 1rem;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background:#f9fafb;
+      color:#111827;
+      font-weight:900;
+      font-size: 1rem;
+      cursor:pointer;
+    }
+    .secondary-btn:hover{ background:#e5e7eb; }
+
+    .top-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:.5rem;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    .badge{
+      background:#eef2ff;
+      border:1px solid #c7d2fe;
+      border-radius: 999px;
+      padding:.18rem .55rem;
+      font-weight:900;
+      color:#374151;
+      font-size: .85rem;
+      white-space:nowrap;
+    }
+
+    .listen-row{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      margin: 6px 0 8px;
+      flex-wrap:wrap;
+    }
+    .big-btn{
+      padding: .85rem 1rem;
+      border-radius: 999px;
+      border: 2px solid #d1d5db;
+      background:#fff;
+      font-weight: 1000;
+      font-size: 1.05rem;
+      cursor:pointer;
+      min-height: 50px;
+    }
+    .big-btn:hover{ border-color:#9ca3af; box-shadow: 0 10px 22px rgba(0,0,0,.08); }
+    .big-btn:active{ transform: translateY(1px); }
+
+    .prompt{
+      text-align:center;
+      font-weight:1000;
+      margin: 0;
+      font-size: clamp(1.05rem, 3.9vw, 1.25rem);
+      color:#111827;
+    }
+
+    .options{
+      display:grid;
+      gap: 10px;
+      margin-top: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (min-width: 560px){
+      .options{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    .img-opt{
+      width:100%;
+      border-radius: 16px;
+      border: 2px solid #d1d5db;
+      background:#fff;
+      padding: 8px;
+      cursor:pointer;
+      transition: transform .05s ease, box-shadow .12s ease, border-color .12s ease;
+      min-height: 110px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .img-opt:hover{
+      border-color:#9ca3af;
+      box-shadow: 0 10px 22px rgba(0,0,0,.08);
+    }
+    .img-opt:active{ transform: translateY(1px); }
+    .img-opt:disabled{ opacity:.7; cursor:not-allowed; }
+
+    .img-opt img{
+      width:100%;
+      height:100%;
+      max-height: 150px;
+      object-fit: contain;
+      display:block;
+    }
+
+    .feedback{
+      min-height: 1.25rem;
+      text-align:center;
+      font-weight: 900;
+      margin-top: 8px;
+    }
+    .ok{ color:#15803d; }
+    .err{ color:#b91c1c; }
+
+    #result-screen h2{
+      margin:.2rem 0 .35rem;
+      text-align:center;
+      font-size: 1.5rem;
+    }
+    #result-text{
+      margin:.2rem 0 0;
+      text-align:center;
+      color:#374151;
+      font-weight:800;
+      line-height:1.35;
+    }
+    .note{
+      margin:.8rem 0 0;
+      text-align:center;
+      color:#4b5563;
+      font-size:.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Zahlen hören</h1>
+    <p class="subtitle">Tippe auf „Zahl hören“ und wähle unten das richtige Bild (1–20).</p>
+
+    <!-- START -->
+    <div id="start-screen">
+      <div class="card">
+        <label for="questions-select">Anzahl Aufgaben</label>
+        <select id="questions-select">
+          <option value="10">10 Aufgaben</option>
+          <option value="15">15 Aufgaben</option>
+          <option value="20" selected>20 Aufgaben</option>
+        </select>
+
+        <label for="voice-select">Stimme (Vorlesen)</label>
+        <select id="voice-select">
+          <option value="">Standard (Browser)</option>
+        </select>
+
+        <div style="margin-top:.7rem; display:flex; gap:.4rem; flex-wrap:wrap; justify-content:center;">
+          <span class="badge">Bilder: <strong>images/1.png</strong> … <strong>images/20.png</strong></span>
+          <span class="badge">Audio: <strong>audio/correct.wav</strong>, <strong>audio/error.wav</strong></span>
+        </div>
+      </div>
+
+      <button class="primary-btn" id="start-btn">Los!</button>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="quiz-screen" class="hidden">
+      <div class="top-row">
+        <div class="badge" id="progress-badge">Aufgabe 1 / 20</div>
+        <div style="display:flex; gap:.4rem; flex-wrap:wrap;">
+          <div class="badge">Richtig: <span id="stat-correct">0</span></div>
+          <div class="badge">Falsch: <span id="stat-wrong">0</span></div>
+        </div>
+      </div>
+
+      <p class="prompt">Hör gut zu: Welche Zahl wird gesagt?</p>
+
+      <div class="listen-row">
+        <button class="big-btn" id="hear-btn">🔊 Zahl hören</button>
+        <span class="badge" id="hear-hint">Du kannst mehrmals hören.</span>
+      </div>
+
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result-screen" class="hidden">
+      <div class="card">
+        <h2>Fertig! 🎉</h2>
+        <p id="result-text"></p>
+        <p class="note">
+          Klicke auf <strong>„Fertig“</strong>, damit LearningView den Auftrag als erledigt markiert.
+        </p>
+        <button class="primary-btn" id="finish-btn">Fertig</button>
+        <button class="secondary-btn" id="again-btn">Nochmals üben</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <audio id="sound-correct" src="audio/correct.wav" preload="auto"></audio>
+  <audio id="sound-error"   src="audio/error.wav"   preload="auto"></audio>
+
+  <script>
+    // ====== Konfiguration ======
+    const MIN_N = 1;
+    const MAX_N = 20;
+    const IMG_PATH = (n) => `images/${n}.png`;
+    const CHOICES = 4;
+
+    // ====== DOM ======
+    const startScreen = document.getElementById("start-screen");
+    const quizScreen  = document.getElementById("quiz-screen");
+    const resultScreen= document.getElementById("result-screen");
+
+    const startBtn  = document.getElementById("start-btn");
+    const finishBtn = document.getElementById("finish-btn");
+    const againBtn  = document.getElementById("again-btn");
+
+    const questionsSelect = document.getElementById("questions-select");
+    const voiceSelect = document.getElementById("voice-select");
+
+    const progressBadge = document.getElementById("progress-badge");
+    const statCorrectEl = document.getElementById("stat-correct");
+    const statWrongEl   = document.getElementById("stat-wrong");
+    const feedbackEl    = document.getElementById("feedback");
+    const optionsEl     = document.getElementById("options");
+    const resultText    = document.getElementById("result-text");
+
+    const hearBtn = document.getElementById("hear-btn");
+
+    // ====== Audio ======
+    function playSound(id){
+      const el = document.getElementById(id);
+      if (!el) return;
+      try{ el.currentTime = 0; el.play().catch(()=>{}); }catch(e){}
+    }
+
+    // ====== Utils ======
+    function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j = randInt(0,i);
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+    function pickDistinctNumbers(count, correctN){
+      const set = new Set([correctN]);
+      while(set.size < count){
+        set.add(randInt(MIN_N, MAX_N));
+      }
+      return shuffle([...set]);
+    }
+
+    // Preload images
+    (function preloadImages(){
+      for(let n=MIN_N;n<=MAX_N;n++){
+        const img = new Image();
+        img.src = IMG_PATH(n);
+      }
+    })();
+
+    // ====== Speech ======
+    let voices = [];
+    let chosenVoice = null;
+
+    function loadVoices(){
+      if (!("speechSynthesis" in window)) return;
+      voices = window.speechSynthesis.getVoices() || [];
+      const opts = [];
+      voices.forEach((v, idx) => {
+        // bevorzugt Deutsch
+        const lang = (v.lang || "").toLowerCase();
+        if (lang.startsWith("de")) opts.push({v, idx});
+      });
+
+      // Dropdown füllen: erst deutsche Stimmen, dann alle
+      voiceSelect.innerHTML = '<option value="">Standard (Browser)</option>';
+      const addVoiceOpt = (v, idx, labelExtra="") => {
+        const o = document.createElement("option");
+        o.value = String(idx);
+        o.textContent = `${v.name} (${v.lang})${labelExtra}`;
+        voiceSelect.appendChild(o);
+      };
+
+      if (opts.length){
+        opts.forEach(({v, idx}) => addVoiceOpt(v, idx, " ★"));
+      }
+      // Alle Stimmen anhängen (ohne Duplikate)
+      voices.forEach((v, idx) => {
+        if (!opts.some(o => o.idx === idx)) addVoiceOpt(v, idx, "");
+      });
+    }
+
+    function speakNumber(n){
+      if (!("speechSynthesis" in window)) return;
+      try{
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(String(n));
+        u.lang = "de-CH"; // CH bevorzugen (Browser wählt passend)
+        if (chosenVoice) u.voice = chosenVoice;
+        u.rate = 0.9;
+        u.pitch = 1.0;
+        window.speechSynthesis.speak(u);
+      }catch(e){}
+    }
+
+    voiceSelect.addEventListener("change", () => {
+      const idx = Number(voiceSelect.value);
+      chosenVoice = Number.isFinite(idx) ? voices[idx] : null;
+    });
+
+    if ("speechSynthesis" in window){
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    // ====== Zustand ======
+    let totalQuestions = 20;
+    let order = [];
+    let qIndex = 0;
+    let correct = 0;
+    let wrong = 0;
+    let currentN = null;
+    let locked = false;
+
+    function setFeedback(text, ok){
+      feedbackEl.textContent = text || "";
+      feedbackEl.className = "feedback" + (text ? (" " + (ok ? "ok":"err")) : "");
+    }
+
+    function lockButtons(){
+      optionsEl.querySelectorAll("button").forEach(b => b.disabled = true);
+    }
+
+    function renderOptions(nums){
+      optionsEl.innerHTML = "";
+      nums.forEach(n => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "img-opt";
+        b.innerHTML = `<img alt="Bild ${n}" src="${IMG_PATH(n)}">`;
+        b.addEventListener("click", () => choose(n));
+        optionsEl.appendChild(b);
+      });
+    }
+
+    function showQuestion(){
+      locked = false;
+      setFeedback("", true);
+
+      progressBadge.textContent = `Aufgabe ${qIndex+1} / ${totalQuestions}`;
+      currentN = order[qIndex];
+
+      const nums = pickDistinctNumbers(CHOICES, currentN);
+      renderOptions(nums);
+
+      // direkt vorlesen (und Button bleibt für Wiederholung)
+      speakNumber(currentN);
+    }
+
+    function choose(n){
+      if (locked) return;
+      locked = true;
+      lockButtons();
+
+      if (n === currentN){
+        correct++;
+        statCorrectEl.textContent = String(correct);
+        setFeedback("Richtig! 👍", true);
+        playSound("sound-correct");
+      } else {
+        wrong++;
+        statWrongEl.textContent = String(wrong);
+        setFeedback("Leider falsch.", false);
+        playSound("sound-error");
+      }
+
+      qIndex++;
+      if (qIndex >= totalQuestions){
+        setTimeout(endQuiz, 650);
+      } else {
+        setTimeout(showQuestion, 650);
+      }
+    }
+
+    function start(){
+      totalQuestions = Number(questionsSelect.value) || 20;
+
+      qIndex = 0;
+      correct = 0;
+      wrong = 0;
+      statCorrectEl.textContent = "0";
+      statWrongEl.textContent = "0";
+
+      // Reihenfolge ohne Wiederholung (max 20)
+      const all = [];
+      for(let n=MIN_N;n<=MAX_N;n++) all.push(n);
+      shuffle(all);
+      order = all.slice(0, Math.min(totalQuestions, all.length));
+
+      // Falls jemand >20 wählt (aktuell nicht), zyklisch auffüllen:
+      while(order.length < totalQuestions){
+        shuffle(all);
+        for(const n of all){
+          if(order.length >= totalQuestions) break;
+          order.push(n);
+        }
+      }
+
+      startScreen.classList.add("hidden");
+      resultScreen.classList.add("hidden");
+      quizScreen.classList.remove("hidden");
+
+      showQuestion();
+    }
+
+    function endQuiz(){
+      quizScreen.classList.add("hidden");
+      resultScreen.classList.remove("hidden");
+
+      const pct = Math.round((correct / totalQuestions) * 100);
+      resultText.innerHTML =
+        `Du hast <strong>${totalQuestions}</strong> Aufgaben gelöst.<br>` +
+        `Richtig: <strong>${correct}</strong> (${pct}%)<br>` +
+        `Falsch: <strong>${wrong}</strong>.`;
+
+      finishBtn.disabled = false;
+      finishBtn.textContent = "Fertig";
+    }
+
+    // ====== Events ======
+    startBtn.addEventListener("click", start);
+
+    hearBtn.addEventListener("click", () => {
+      if (currentN != null) speakNumber(currentN);
+    });
+
+    againBtn.addEventListener("click", () => {
+      resultScreen.classList.add("hidden");
+      startScreen.classList.remove("hidden");
+    });
+
+    // LearningView Feedback
+    finishBtn.addEventListener("click", () => {
+      finishBtn.disabled = true;
+      finishBtn.textContent = "Erledigt ✔";
+      try{
+        if (window.parent && window.parent !== window){
+          window.parent.postMessage("AppSolved", "*");
+        }
+      }catch(e){
+        console.warn("LearningView-AppSolved nicht möglich:", e);
+      }
+    });
+  </script>
+</body>
+</html>
